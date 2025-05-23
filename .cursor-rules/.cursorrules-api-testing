@@ -1,0 +1,401 @@
+# API & Testing Cursor Rules
+
+## API Development Best Practices
+
+### RESTful API Design
+- Use proper HTTP methods (GET, POST, PUT, PATCH, DELETE)
+- Implement consistent URL patterns (/api/v1/resources)
+- Use appropriate HTTP status codes (200, 201, 400, 401, 404, 500)
+- Implement proper error response formats
+- Use pagination for large data sets
+- Version your APIs (/v1/, /v2/) for backward compatibility
+
+### Request/Response Patterns
+- Validate all input data with schemas (Zod, Joi, Yup)
+- Sanitize user inputs to prevent injection attacks
+- Use consistent response formats across endpoints
+- Implement proper content-type headers
+- Handle file uploads securely with size and type validation
+- Use compression for large responses
+
+### Authentication & Authorization
+- Implement JWT tokens with proper expiration
+- Use refresh tokens for long-lived sessions
+- Implement role-based access control (RBAC)
+- Secure sensitive endpoints with proper middleware
+- Use HTTPS in production environments
+- Implement rate limiting to prevent abuse
+
+### Database Integration
+- Use connection pooling for database connections
+- Implement proper transaction handling
+- Use prepared statements to prevent SQL injection
+- Implement database migrations for schema changes
+- Use indexes for frequently queried fields
+- Implement soft deletes for important data
+
+### Error Handling & Logging
+- Implement centralized error handling middleware
+- Log errors with appropriate detail levels
+- Use structured logging (JSON format)
+- Implement request/response logging for debugging
+- Set up monitoring and alerting for production
+- Never expose sensitive information in error messages
+
+## Testing Strategies
+
+### Unit Testing
+- Test individual functions and methods in isolation
+- Mock external dependencies (APIs, databases, file system)
+- Aim for high code coverage on business logic
+- Use descriptive test names that explain the scenario
+- Follow AAA pattern: Arrange, Act, Assert
+- Test both happy paths and error conditions
+
+### Integration Testing
+- Test API endpoints with real database connections
+- Test authentication and authorization flows
+- Verify data persistence and retrieval
+- Test file upload and processing workflows
+- Use test databases that mirror production schema
+- Clean up test data after each test run
+
+### End-to-End Testing
+- Test complete user workflows from UI to database
+- Use tools like Playwright or Cypress for web apps
+- Test critical business processes thoroughly
+- Include accessibility testing in E2E tests
+- Test on multiple browsers and devices
+- Implement visual regression testing
+
+### API Testing
+- Test all HTTP methods and status codes
+- Validate request and response schemas
+- Test authentication and authorization
+- Test rate limiting and error handling
+- Use tools like Supertest for Node.js APIs
+- Implement contract testing for microservices
+
+## Code Examples
+
+### Express.js API Structure
+```typescript
+// routes/users.ts
+import { Router } from 'express';
+import { z } from 'zod';
+import { validateRequest } from '../middleware/validation';
+import { authenticate } from '../middleware/auth';
+import { UserService } from '../services/UserService';
+
+const router = Router();
+const userService = new UserService();
+
+const createUserSchema = z.object({
+  body: z.object({
+    name: z.string().min(1).max(100),
+    email: z.string().email(),
+    password: z.string().min(8),
+  }),
+});
+
+router.post(
+  '/users',
+  validateRequest(createUserSchema),
+  async (req, res, next) => {
+    try {
+      const user = await userService.createUser(req.body);
+      res.status(201).json({
+        success: true,
+        data: user,
+        message: 'User created successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.get('/users/:id', authenticate, async (req, res, next) => {
+  try {
+    const user = await userService.getUserById(req.params.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+    }
+    res.json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export default router;
+```
+
+### Error Handling Middleware
+```typescript
+// middleware/errorHandler.ts
+import { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
+
+interface ApiError extends Error {
+  statusCode?: number;
+  isOperational?: boolean;
+}
+
+export const errorHandler = (
+  error: ApiError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  let statusCode = error.statusCode || 500;
+  let message = error.message || 'Internal Server Error';
+
+  // Handle Zod validation errors
+  if (error instanceof ZodError) {
+    statusCode = 400;
+    message = 'Validation Error';
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+      details: error.errors,
+    });
+  }
+
+  // Log error for debugging
+  console.error('API Error:', {
+    message: error.message,
+    stack: error.stack,
+    url: req.url,
+    method: req.method,
+    timestamp: new Date().toISOString(),
+  });
+
+  res.status(statusCode).json({
+    success: false,
+    error: message,
+    ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
+  });
+};
+```
+
+### Testing Examples
+
+#### Unit Test with Jest
+```typescript
+// __tests__/services/UserService.test.ts
+import { UserService } from '../../src/services/UserService';
+import { UserRepository } from '../../src/repositories/UserRepository';
+
+jest.mock('../../src/repositories/UserRepository');
+
+describe('UserService', () => {
+  let userService: UserService;
+  let mockUserRepository: jest.Mocked<UserRepository>;
+
+  beforeEach(() => {
+    mockUserRepository = new UserRepository() as jest.Mocked<UserRepository>;
+    userService = new UserService(mockUserRepository);
+  });
+
+  describe('createUser', () => {
+    it('should create a user successfully', async () => {
+      // Arrange
+      const userData = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'password123',
+      };
+      const expectedUser = { id: '1', ...userData };
+      mockUserRepository.create.mockResolvedValue(expectedUser);
+
+      // Act
+      const result = await userService.createUser(userData);
+
+      // Assert
+      expect(result).toEqual(expectedUser);
+      expect(mockUserRepository.create).toHaveBeenCalledWith(userData);
+    });
+
+    it('should throw error when email already exists', async () => {
+      // Arrange
+      const userData = {
+        name: 'John Doe',
+        email: 'existing@example.com',
+        password: 'password123',
+      };
+      mockUserRepository.create.mockRejectedValue(
+        new Error('Email already exists')
+      );
+
+      // Act & Assert
+      await expect(userService.createUser(userData)).rejects.toThrow(
+        'Email already exists'
+      );
+    });
+  });
+});
+```
+
+#### Integration Test with Supertest
+```typescript
+// __tests__/integration/users.test.ts
+import request from 'supertest';
+import { app } from '../../src/app';
+import { setupTestDb, cleanupTestDb } from '../helpers/database';
+
+describe('Users API', () => {
+  beforeAll(async () => {
+    await setupTestDb();
+  });
+
+  afterAll(async () => {
+    await cleanupTestDb();
+  });
+
+  describe('POST /api/users', () => {
+    it('should create a new user', async () => {
+      const userData = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'password123',
+      };
+
+      const response = await request(app)
+        .post('/api/users')
+        .send(userData)
+        .expect(201);
+
+      expect(response.body).toMatchObject({
+        success: true,
+        data: {
+          id: expect.any(String),
+          name: userData.name,
+          email: userData.email,
+        },
+        message: 'User created successfully',
+      });
+    });
+
+    it('should return 400 for invalid email', async () => {
+      const userData = {
+        name: 'John Doe',
+        email: 'invalid-email',
+        password: 'password123',
+      };
+
+      const response = await request(app)
+        .post('/api/users')
+        .send(userData)
+        .expect(400);
+
+      expect(response.body).toMatchObject({
+        success: false,
+        error: 'Validation Error',
+      });
+    });
+  });
+});
+```
+
+#### React Component Test
+```typescript
+// __tests__/components/UserProfile.test.tsx
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { UserProfile } from '../../src/components/UserProfile';
+import { useUser } from '../../src/hooks/useUser';
+
+jest.mock('../../src/hooks/useUser');
+
+describe('UserProfile', () => {
+  const mockUseUser = useUser as jest.MockedFunction<typeof useUser>;
+
+  beforeEach(() => {
+    mockUseUser.mockReturnValue({
+      user: {
+        id: '1',
+        name: 'John Doe',
+        email: 'john@example.com',
+      },
+      loading: false,
+      error: null,
+      updateUser: jest.fn(),
+    });
+  });
+
+  it('should display user information', () => {
+    render(<UserProfile userId="1" />);
+
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    expect(screen.getByText('john@example.com')).toBeInTheDocument();
+  });
+
+  it('should handle user update', async () => {
+    const mockUpdateUser = jest.fn();
+    mockUseUser.mockReturnValue({
+      user: { id: '1', name: 'John Doe', email: 'john@example.com' },
+      loading: false,
+      error: null,
+      updateUser: mockUpdateUser,
+    });
+
+    render(<UserProfile userId="1" />);
+
+    const editButton = screen.getByRole('button', { name: /edit/i });
+    await userEvent.click(editButton);
+
+    const nameInput = screen.getByLabelText(/name/i);
+    await userEvent.clear(nameInput);
+    await userEvent.type(nameInput, 'Jane Doe');
+
+    const saveButton = screen.getByRole('button', { name: /save/i });
+    await userEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(mockUpdateUser).toHaveBeenCalledWith({
+        id: '1',
+        name: 'Jane Doe',
+        email: 'john@example.com',
+      });
+    });
+  });
+});
+```
+
+## Testing Configuration
+
+### Jest Configuration
+```javascript
+// jest.config.js
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  roots: ['<rootDir>/src', '<rootDir>/__tests__'],
+  testMatch: ['**/__tests__/**/*.test.ts'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.d.ts',
+    '!src/index.ts',
+  ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'html'],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setup.ts'],
+};
+```
+
+### React Testing Library Setup
+```typescript
+// __tests__/setup.ts
+import '@testing-library/jest-dom';
+import { server } from './mocks/server';
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+``` 

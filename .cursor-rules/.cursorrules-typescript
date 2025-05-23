@@ -1,0 +1,236 @@
+# TypeScript-Specific Cursor Rules
+
+## Type Safety & Best Practices
+
+### Type Definitions
+- Always define explicit types for function parameters and return values
+- Use interfaces for object shapes and contracts
+- Use type aliases for union types and complex type compositions
+- Prefer `interface` over `type` for object definitions that might be extended
+- Use `const assertions` for immutable data structures
+
+### Strict TypeScript Configuration
+- Enable strict mode in tsconfig.json
+- Use `noImplicitAny`, `strictNullChecks`, and `strictFunctionTypes`
+- Enable `noImplicitReturns` and `noFallthroughCasesInSwitch`
+- Use `exactOptionalPropertyTypes` for precise optional property handling
+
+### Generic Types
+- Use meaningful generic parameter names (not just T, U, V)
+- Constrain generics with `extends` when appropriate
+- Use default generic parameters when sensible
+- Avoid over-engineering with too many generic parameters
+
+### Utility Types
+- Leverage built-in utility types: `Partial`, `Required`, `Pick`, `Omit`
+- Use `Record<K, V>` for key-value mappings
+- Use `Extract` and `Exclude` for union type manipulation
+- Create custom utility types for domain-specific transformations
+
+### Error Handling
+- Use discriminated unions for error states
+- Prefer `Result<T, E>` pattern for functions that can fail
+- Use `never` type for exhaustive checking
+- Implement proper type guards for runtime type checking
+
+### API & Data Types
+- Define separate types for API requests and responses
+- Use branded types for IDs and other primitive wrappers
+- Validate external data with runtime type checking (zod, io-ts)
+- Create type-safe API client interfaces
+
+## Code Examples
+
+### Interface vs Type Usage
+```typescript
+// Use interface for extensible object shapes
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface AdminUser extends User {
+  permissions: string[];
+}
+
+// Use type for unions and computed types
+type Status = 'loading' | 'success' | 'error';
+type UserWithStatus = User & { status: Status };
+```
+
+### Generic Constraints
+```typescript
+// Good: Meaningful names and constraints
+interface Repository<TEntity extends { id: string }> {
+  findById(id: string): Promise<TEntity | null>;
+  save(entity: TEntity): Promise<TEntity>;
+  delete(id: string): Promise<void>;
+}
+
+// Better: With default parameters
+interface ApiResponse<TData = unknown, TError = string> {
+  data?: TData;
+  error?: TError;
+  status: number;
+}
+```
+
+### Discriminated Unions
+```typescript
+interface LoadingState {
+  status: 'loading';
+}
+
+interface SuccessState {
+  status: 'success';
+  data: any;
+}
+
+interface ErrorState {
+  status: 'error';
+  error: string;
+}
+
+type AsyncState = LoadingState | SuccessState | ErrorState;
+
+// Type-safe state handling
+function handleState(state: AsyncState) {
+  switch (state.status) {
+    case 'loading':
+      return <Spinner />;
+    case 'success':
+      return <DataDisplay data={state.data} />; // data is available
+    case 'error':
+      return <ErrorMessage error={state.error} />; // error is available
+    default:
+      // TypeScript ensures exhaustive checking
+      const _exhaustive: never = state;
+      return _exhaustive;
+  }
+}
+```
+
+### Type Guards
+```typescript
+// Runtime type checking
+function isUser(obj: unknown): obj is User {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'id' in obj &&
+    'name' in obj &&
+    'email' in obj
+  );
+}
+
+// Usage with type narrowing
+function processUserData(data: unknown) {
+  if (isUser(data)) {
+    // data is now typed as User
+    console.log(data.name); // TypeScript knows this is safe
+  }
+}
+```
+
+### Branded Types
+```typescript
+// Create distinct types for IDs
+type UserId = string & { readonly brand: unique symbol };
+type ProductId = string & { readonly brand: unique symbol };
+
+function createUserId(id: string): UserId {
+  return id as UserId;
+}
+
+function createProductId(id: string): ProductId {
+  return id as ProductId;
+}
+
+// Functions can't accidentally mix ID types
+function getUser(id: UserId): Promise<User> {
+  // Implementation
+}
+
+function getProduct(id: ProductId): Promise<Product> {
+  // Implementation
+}
+```
+
+### Result Pattern
+```typescript
+type Result<T, E = Error> = 
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+async function fetchUser(id: string): Promise<Result<User, string>> {
+  try {
+    const response = await fetch(`/api/users/${id}`);
+    if (!response.ok) {
+      return { success: false, error: 'User not found' };
+    }
+    const user = await response.json();
+    return { success: true, data: user };
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
+  }
+}
+
+// Usage
+const result = await fetchUser('123');
+if (result.success) {
+  console.log(result.data.name); // TypeScript knows data exists
+} else {
+  console.error(result.error); // TypeScript knows error exists
+}
+```
+
+### Advanced Type Patterns
+```typescript
+// Conditional types for API responses
+type ApiEndpoint<T> = T extends 'users' 
+  ? User[] 
+  : T extends 'products' 
+  ? Product[] 
+  : never;
+
+// Mapped types for form validation
+type ValidationErrors<T> = {
+  [K in keyof T]?: string;
+};
+
+// Template literal types for type-safe routing
+type Route = `/users/${string}` | `/products/${string}` | '/dashboard';
+
+// Recursive types for nested data
+type NestedData<T> = {
+  [K in keyof T]: T[K] extends object ? NestedData<T[K]> : T[K];
+};
+```
+
+## Configuration Best Practices
+
+### tsconfig.json
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true
+  }
+}
+```
+
+### ESLint TypeScript Rules
+- Use `@typescript-eslint/no-explicit-any` to avoid any usage
+- Enable `@typescript-eslint/prefer-nullish-coalescing`
+- Use `@typescript-eslint/prefer-optional-chain`
+- Enable `@typescript-eslint/no-unused-vars` 

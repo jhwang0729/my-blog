@@ -1,0 +1,250 @@
+# Personal Web Application - Cursor Rules
+
+This is a personal portfolio and note-taking web application with resume management features.
+
+## 🎯 Project Overview
+
+### Core Features
+- **Personal Portfolio**: Main page with education/work summary
+- **Resume Management**: Upload, store, and share multiple resume versions
+- **Notion-like Notes**: Private note-taking with markdown, page linking, and ChatGPT integration
+- **Hidden Authentication**: Secret login system for editing (no visible login buttons)
+
+### Tech Stack
+- **Frontend**: Next.js 14+ with TypeScript and App Router
+- **Styling**: Tailwind CSS with Radix UI components
+- **Database**: Supabase (PostgreSQL + Authentication + File Storage)
+- **Deployment**: Vercel
+- **AI Integration**: OpenAI API for note summarization and search
+- **State Management**: Zustand for client state, React Query for server state
+
+## 🏗️ Project Structure
+
+```
+src/
+├── app/                     # Next.js App Router
+│   ├── (auth)/             # Auth routes (hidden)
+│   ├── api/                # API routes
+│   ├── notes/              # Note-taking pages
+│   ├── resume/             # Resume management
+│   └── globals.css         # Global styles
+├── components/
+│   ├── ui/                 # Radix UI primitives
+│   ├── layout/             # Header, footer, navigation
+│   ├── resume/             # Resume-related components
+│   ├── notes/              # Note-taking components
+│   └── auth/               # Authentication components
+├── lib/
+│   ├── supabase.ts         # Supabase client
+│   ├── openai.ts           # OpenAI integration
+│   └── utils.ts            # Utility functions
+├── hooks/                  # Custom React hooks
+├── stores/                 # Zustand stores
+├── types/                  # TypeScript definitions
+└── middleware.ts           # Auth middleware
+```
+
+## 🔐 Authentication Strategy
+
+### Hidden Login System
+- **Secret URL**: `/admin-portal-xyz` for login access
+- **No visible login buttons** on public pages
+- **Middleware protection** for editing routes
+- **Session management** with Supabase Auth
+
+### Route Protection
+```typescript
+// Protected routes that require authentication
+const protectedRoutes = [
+  '/notes/edit',
+  '/resume/upload',
+  '/admin-portal-xyz'
+];
+```
+
+## 💾 Database Schema (Supabase)
+
+### Core Tables
+```sql
+-- User profile
+profiles (
+  id UUID PRIMARY KEY,
+  email TEXT,
+  full_name TEXT,
+  bio TEXT,
+  created_at TIMESTAMP
+);
+
+-- Resume management
+resumes (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id),
+  title TEXT,
+  file_url TEXT,
+  file_name TEXT,
+  version INTEGER,
+  is_public BOOLEAN DEFAULT true,
+  created_at TIMESTAMP
+);
+
+-- Notes system
+notes (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id),
+  title TEXT,
+  content TEXT,
+  slug TEXT UNIQUE,
+  icon TEXT,
+  header_image TEXT,
+  parent_note_id UUID REFERENCES notes(id),
+  is_published BOOLEAN DEFAULT false,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+);
+
+-- Note links (for page connections)
+note_links (
+  id UUID PRIMARY KEY,
+  source_note_id UUID REFERENCES notes(id),
+  target_note_id UUID REFERENCES notes(id),
+  created_at TIMESTAMP
+);
+```
+
+## 🎨 Design System
+
+### Color Scheme
+```typescript
+// Tailwind config for personal branding
+const colors = {
+  primary: {
+    50: '#f0f9ff',
+    500: '#3b82f6',
+    900: '#1e3a8a',
+  },
+  gray: {
+    50: '#f9fafb',
+    500: '#6b7280',
+    900: '#111827',
+  }
+};
+```
+
+### Component Patterns
+- **Consistent spacing**: Use Tailwind's spacing scale (4, 8, 16, 24, 32px)
+- **Typography**: Clear hierarchy with proper font weights
+- **Interactive elements**: Hover states and smooth transitions
+- **Responsive design**: Mobile-first approach
+- **Dark mode support**: System preference detection
+
+## 🤖 AI Integration
+
+### OpenAI Features
+```typescript
+// API routes for AI functionality
+/api/ai/summarize    // Summarize note content
+/api/ai/search       // Search through notes
+/api/ai/suggest      // Suggest related notes
+```
+
+### Implementation Guidelines
+- **Streaming responses** for better UX
+- **Error handling** for API failures
+- **Rate limiting** to manage costs
+- **Context management** for better results
+
+## 📁 File Management
+
+### Resume Storage
+- **Supabase Storage** for file uploads
+- **Public bucket** for downloadable resumes
+- **Version control** for multiple resume versions
+- **File type validation** (PDF, DOCX only)
+
+### Note Assets
+- **Image uploads** for note headers
+- **Icon selection** from lucide-react library
+- **File size limits** and compression
+
+## 🚀 Deployment Strategy
+
+### Environment Variables
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# OpenAI
+OPENAI_API_KEY=
+
+# Auth
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=
+
+# App
+NEXT_PUBLIC_APP_URL=
+```
+
+### Vercel Configuration
+- **Automatic deployments** from main branch
+- **Preview deployments** for feature branches
+- **Environment variable management**
+- **Domain configuration**
+
+## 🧪 Testing Strategy
+
+### Component Testing
+- **React Testing Library** for component tests
+- **Jest** for unit tests
+- **MSW** for API mocking
+
+### E2E Testing
+- **Playwright** for critical user flows
+- **Authentication flows**
+- **File upload testing**
+- **Note creation and editing**
+
+## 🔧 Development Workflow
+
+### Git Workflow
+```bash
+main branch         # Production deployments
+feature/xyz         # Feature development
+hotfix/xyz         # Quick fixes
+```
+
+### Commit Convention
+```
+feat: add resume upload functionality
+fix: resolve authentication redirect issue
+docs: update README with setup instructions
+style: improve mobile responsive design
+```
+
+## 📊 Performance Guidelines
+
+### Optimization Strategies
+- **Image optimization** with next/image
+- **Code splitting** with dynamic imports
+- **Bundle analysis** with @next/bundle-analyzer
+- **Lazy loading** for heavy components
+- **Supabase query optimization**
+
+### Monitoring
+- **Vercel Analytics** for performance metrics
+- **Supabase dashboard** for database monitoring
+- **Error tracking** with console logging
+
+## 🎯 Key Development Principles
+
+1. **User Privacy**: Only authenticated user can edit content
+2. **Performance**: Fast loading times and smooth interactions
+3. **Accessibility**: Proper ARIA labels and keyboard navigation
+4. **SEO**: Optimized meta tags and structured data
+5. **Security**: Proper input validation and sanitization
+6. **Maintainability**: Clean code structure and documentation
+
+---
+
+Follow these guidelines to build a professional, modern personal web application that showcases your work while providing powerful note-taking capabilities. 

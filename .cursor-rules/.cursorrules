@@ -1,0 +1,156 @@
+# Cursor Rules for Personal Web Application
+
+## General Development Guidelines
+
+### Code Quality & Standards
+- Write clean, readable, and maintainable code
+- Use TypeScript for type safety and better developer experience
+- Follow consistent naming conventions (camelCase for variables/functions, PascalCase for components/classes)
+- Prefer functional programming patterns and immutable data structures
+- Write self-documenting code with clear variable and function names
+- Add comments only when the code's intent isn't immediately clear
+
+### Project Structure
+- Organize code into logical modules and directories
+- Keep components small and focused on a single responsibility
+- Use barrel exports (index.ts files) for cleaner imports
+- Separate business logic from UI components
+- Group related files together (components, hooks, utils, types)
+
+### Performance & Optimization
+- Implement lazy loading for routes and heavy components
+- Optimize images and assets for web delivery
+- Use React.memo, useMemo, and useCallback judiciously
+- Minimize bundle size and implement code splitting
+- Implement proper caching strategies
+
+### Security Best Practices
+- Sanitize user inputs and validate data on both client and server
+- Use HTTPS in production
+- Implement proper authentication and authorization
+- Avoid exposing sensitive information in client-side code
+- Use environment variables for configuration
+
+### Testing Strategy
+- Write unit tests for utility functions and business logic
+- Create integration tests for critical user flows
+- Use React Testing Library for component testing
+- Aim for meaningful test coverage, not just high percentages
+- Write tests that focus on behavior, not implementation details
+
+### Accessibility (a11y)
+- Use semantic HTML elements
+- Provide proper ARIA labels and roles
+- Ensure keyboard navigation works throughout the app
+- Maintain proper color contrast ratios
+- Test with screen readers
+
+### Error Handling
+- Implement comprehensive error boundaries
+- Provide meaningful error messages to users
+- Log errors appropriately for debugging
+- Handle loading and error states gracefully
+- Implement retry mechanisms where appropriate
+
+### State Management
+- Use React's built-in state management for simple cases
+- Consider Zustand or Redux Toolkit for complex state
+- Keep state as close to where it's used as possible
+- Avoid prop drilling with context or state management libraries
+
+### API Integration
+- Use proper HTTP status codes and error handling
+- Implement request/response interceptors for common logic
+- Use React Query or SWR for server state management
+- Implement proper loading states and error handling
+- Cache API responses appropriately
+
+### Styling Guidelines
+- Use CSS-in-JS (styled-components) or utility-first CSS (Tailwind)
+- Maintain consistent design system and spacing
+- Use CSS custom properties for theming
+- Implement responsive design from mobile-first approach
+- Avoid inline styles except for dynamic values
+
+### Git & Version Control
+- Write clear, descriptive commit messages
+- Use conventional commit format (feat:, fix:, docs:, etc.)
+- Keep commits atomic and focused
+- Use feature branches for new development
+- Review code before merging to main branch
+
+## Technology Stack Preferences
+
+### Frontend Framework
+- React 18+ with TypeScript
+- Next.js for full-stack applications with SSR/SSG
+- Vite for client-side applications
+
+### Styling
+- Tailwind CSS for utility-first styling
+- Styled-components for component-level styling
+- CSS Modules as an alternative
+
+### State Management
+- React Query/TanStack Query for server state
+- Zustand for client state management
+- React Hook Form for form state
+
+### UI Components
+- Radix UI or Headless UI for accessible primitives
+- Lucide React for icons
+- Custom components built on top of primitives
+
+### Development Tools
+- ESLint and Prettier for code formatting
+- Husky for git hooks
+- TypeScript for type safety
+- Vitest for testing
+
+### Backend (if needed)
+- Node.js with Express or Fastify
+- Prisma for database ORM
+- PostgreSQL or SQLite for database
+- JWT for authentication
+
+## File Naming Conventions
+- Components: PascalCase (e.g., `UserProfile.tsx`)
+- Hooks: camelCase starting with 'use' (e.g., `useUserData.ts`)
+- Utilities: camelCase (e.g., `formatDate.ts`)
+- Constants: UPPER_SNAKE_CASE (e.g., `API_ENDPOINTS.ts`)
+- Types: PascalCase (e.g., `UserTypes.ts`)
+
+## Import Organization
+1. React and external libraries
+2. Internal components and hooks
+3. Utilities and constants
+4. Types and interfaces
+5. Relative imports
+
+## Component Structure Template
+```tsx
+import React from 'react';
+import { ComponentProps } from './ComponentName.types';
+
+export const ComponentName: React.FC<ComponentProps> = ({ 
+  prop1, 
+  prop2,
+  ...props 
+}) => {
+  // Hooks
+  // Event handlers
+  // Render logic
+  
+  return (
+    <div {...props}>
+      {/* Component JSX */}
+    </div>
+  );
+};
+```
+
+## Environment Setup
+- Use `.env.local` for local development variables
+- Use `.env.example` to document required environment variables
+- Never commit sensitive information to version control
+- Use different environments for development, staging, and production 

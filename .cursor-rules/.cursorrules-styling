@@ -1,0 +1,365 @@
+# Styling & Design System Cursor Rules
+
+## CSS & Styling Best Practices
+
+### CSS Architecture
+- Use CSS-in-JS (styled-components) or utility-first CSS (Tailwind CSS)
+- Implement a consistent design system with tokens
+- Use CSS custom properties for theming and dynamic values
+- Follow BEM methodology if using traditional CSS
+- Organize styles by component, not by property type
+
+### Responsive Design
+- Mobile-first approach: start with mobile styles, then enhance for larger screens
+- Use relative units (rem, em, %) instead of fixed pixels when appropriate
+- Implement fluid typography and spacing using clamp() and calc()
+- Test on multiple device sizes and orientations
+- Use container queries for component-based responsive design
+
+### Design Tokens
+- Define consistent spacing scale (4px, 8px, 16px, 24px, 32px, etc.)
+- Use semantic color naming (primary, secondary, success, warning, error)
+- Implement consistent typography scale and font weights
+- Define standard border radius and shadow values
+- Create consistent animation durations and easing functions
+
+### Performance Optimization
+- Minimize CSS bundle size and remove unused styles
+- Use CSS containment for performance-critical components
+- Implement critical CSS for above-the-fold content
+- Optimize font loading with font-display: swap
+- Use transform and opacity for animations (GPU acceleration)
+
+### Accessibility in Styling
+- Maintain sufficient color contrast ratios (WCAG AA: 4.5:1, AAA: 7:1)
+- Respect user preferences for reduced motion
+- Ensure focus indicators are visible and consistent
+- Use relative units for better zoom compatibility
+- Provide high contrast mode support
+
+## Tailwind CSS Guidelines
+
+### Class Organization
+- Group classes logically: layout → spacing → typography → colors → effects
+- Use responsive prefixes consistently (sm:, md:, lg:, xl:, 2xl:)
+- Prefer Tailwind utilities over custom CSS when possible
+- Extract repeated patterns into component classes
+- Use @apply directive sparingly, prefer composition
+
+### Custom Configuration
+```javascript
+// tailwind.config.js
+module.exports = {
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#eff6ff',
+          500: '#3b82f6',
+          900: '#1e3a8a',
+        },
+        gray: {
+          50: '#f9fafb',
+          500: '#6b7280',
+          900: '#111827',
+        }
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+      }
+    },
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+  ],
+}
+```
+
+### Component Patterns
+```tsx
+// Button component with Tailwind variants
+const buttonVariants = {
+  primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+  secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-900',
+  outline: 'border border-gray-300 hover:bg-gray-50 text-gray-700',
+};
+
+const buttonSizes = {
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-4 py-2 text-base',
+  lg: 'px-6 py-3 text-lg',
+};
+
+interface ButtonProps {
+  variant?: keyof typeof buttonVariants;
+  size?: keyof typeof buttonSizes;
+  children: React.ReactNode;
+}
+
+export const Button: React.FC<ButtonProps> = ({ 
+  variant = 'primary', 
+  size = 'md', 
+  children,
+  ...props 
+}) => {
+  return (
+    <button
+      className={`
+        inline-flex items-center justify-center
+        font-medium rounded-md
+        transition-colors duration-200
+        focus:outline-none focus:ring-2 focus:ring-offset-2
+        disabled:opacity-50 disabled:cursor-not-allowed
+        ${buttonVariants[variant]}
+        ${buttonSizes[size]}
+      `}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+```
+
+## Styled-Components Guidelines
+
+### Component Structure
+```tsx
+import styled, { css } from 'styled-components';
+
+// Base styles with props
+const StyledButton = styled.button<{ variant: 'primary' | 'secondary'; size: 'sm' | 'md' | 'lg' }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: none;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primary[500]}40;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  ${({ variant, theme }) => {
+    switch (variant) {
+      case 'primary':
+        return css`
+          background-color: ${theme.colors.primary[600]};
+          color: white;
+          &:hover:not(:disabled) {
+            background-color: ${theme.colors.primary[700]};
+          }
+        `;
+      case 'secondary':
+        return css`
+          background-color: ${theme.colors.gray[200]};
+          color: ${theme.colors.gray[900]};
+          &:hover:not(:disabled) {
+            background-color: ${theme.colors.gray[300]};
+          }
+        `;
+    }
+  }}
+
+  ${({ size, theme }) => {
+    switch (size) {
+      case 'sm':
+        return css`
+          padding: ${theme.spacing[1]} ${theme.spacing[3]};
+          font-size: ${theme.fontSize.sm};
+        `;
+      case 'md':
+        return css`
+          padding: ${theme.spacing[2]} ${theme.spacing[4]};
+          font-size: ${theme.fontSize.base};
+        `;
+      case 'lg':
+        return css`
+          padding: ${theme.spacing[3]} ${theme.spacing[6]};
+          font-size: ${theme.fontSize.lg};
+        `;
+    }
+  }}
+`;
+```
+
+### Theme Configuration
+```tsx
+// theme.ts
+export const theme = {
+  colors: {
+    primary: {
+      50: '#eff6ff',
+      500: '#3b82f6',
+      600: '#2563eb',
+      700: '#1d4ed8',
+      900: '#1e3a8a',
+    },
+    gray: {
+      50: '#f9fafb',
+      200: '#e5e7eb',
+      300: '#d1d5db',
+      500: '#6b7280',
+      900: '#111827',
+    },
+  },
+  spacing: {
+    1: '0.25rem',
+    2: '0.5rem',
+    3: '0.75rem',
+    4: '1rem',
+    6: '1.5rem',
+  },
+  fontSize: {
+    sm: '0.875rem',
+    base: '1rem',
+    lg: '1.125rem',
+  },
+  breakpoints: {
+    sm: '640px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px',
+  },
+};
+
+export type Theme = typeof theme;
+```
+
+## Animation & Transitions
+
+### CSS Animations
+```css
+/* Prefer transform and opacity for performance */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+### Framer Motion Integration
+```tsx
+import { motion, AnimatePresence } from 'framer-motion';
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+  transition: { duration: 0.3 }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+export const AnimatedList = ({ items }) => (
+  <motion.div variants={staggerContainer} initial="initial" animate="animate">
+    <AnimatePresence>
+      {items.map((item) => (
+        <motion.div key={item.id} variants={fadeInUp} layout>
+          {item.content}
+        </motion.div>
+      ))}
+    </AnimatePresence>
+  </motion.div>
+);
+```
+
+## Dark Mode Implementation
+
+### CSS Custom Properties Approach
+```css
+:root {
+  --color-bg-primary: #ffffff;
+  --color-text-primary: #1f2937;
+  --color-border: #e5e7eb;
+}
+
+[data-theme="dark"] {
+  --color-bg-primary: #1f2937;
+  --color-text-primary: #f9fafb;
+  --color-border: #374151;
+}
+
+.component {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+```
+
+### React Context for Theme
+```tsx
+interface ThemeContextType {
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+}
+
+export const ThemeContext = createContext<ThemeContextType | null>(null);
+
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+``` 
