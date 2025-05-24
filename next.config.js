@@ -11,16 +11,6 @@ const nextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      // Redirect common paths to prevent 404s
-      {
-        source: '/admin',
-        destination: '/admin-portal-xyz',
-        permanent: false,
-      },
-    ];
-  },
 };
 
 module.exports = nextConfig; 

@@ -1,47 +1,70 @@
-export default function HomePage() {
+import About from '@/components/portfolio/About'
+import Contact from '@/components/portfolio/Contact'
+import Experience from '@/components/portfolio/Experience'
+import Hero from '@/components/portfolio/Hero'
+import Navigation from '@/components/portfolio/Navigation'
+import ResumeSection from '@/components/portfolio/ResumeSection'
+import Skills from '@/components/portfolio/Skills'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+
+export default async function HomePage() {
+  const supabase = await createServerSupabaseClient()
+
+  // Get profile data
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .single()
+
+  // Get work experiences
+  const { data: experiences } = await supabase
+    .from('work_experiences')
+    .select('*')
+    .eq('is_visible', true)
+    .order('display_order', { ascending: true })
+
+  // Get education
+  const { data: education } = await supabase
+    .from('education')
+    .select('*')
+    .eq('is_visible', true)
+    .order('display_order', { ascending: true })
+
+  // Get skills
+  const { data: skills } = await supabase
+    .from('skills')
+    .select('*')
+    .eq('is_visible', true)
+    .order('name', { ascending: true })
+
+  // Get public resume files
+  const { data: resumeFiles } = await supabase
+    .from('resume_files')
+    .select('*')
+    .eq('is_public', true)
+    .order('created_at', { ascending: false })
+
   return (
-    <main className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent mb-4">
-            Welcome to My Personal Web
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            A modern portfolio and note-taking application built with Next.js, Supabase, and Tailwind CSS.
-          </p>
-        </header>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          <div className="p-6 bg-card rounded-lg border shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-lg font-semibold mb-2">📄 Resume Management</h3>
-            <p className="text-muted-foreground">
-              Upload, manage, and share multiple versions of your resume with others.
-            </p>
-          </div>
-
-          <div className="p-6 bg-card rounded-lg border shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-lg font-semibold mb-2">📝 Notion-like Notes</h3>
-            <p className="text-muted-foreground">
-              Create and organize notes with markdown formatting and page linking.
-            </p>
-          </div>
-
-          <div className="p-6 bg-card rounded-lg border shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-lg font-semibold mb-2">🤖 AI Integration</h3>
-            <p className="text-muted-foreground">
-              Integrate ChatGPT for note summarization and intelligent search.
-            </p>
-          </div>
-        </div>
-
-        <section className="text-center">
-          <h2 className="text-2xl font-semibold mb-4">Project Status</h2>
-          <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-            Setup Complete - Ready for Development
-          </div>
-        </section>
-      </div>
-    </main>
+    <div className="min-h-screen bg-portfolio">
+      <Navigation />
+      
+      {/* Hero Section */}
+      <Hero profile={profile} />
+      
+      {/* About Section */}
+      <About profile={profile} />
+      
+      {/* Experience Section */}
+      <Experience experiences={experiences || []} />
+      
+      {/* Skills Section */}
+      <Skills skills={skills || []} />
+      
+      {/* Resume Download Section */}
+      <ResumeSection resumeFiles={resumeFiles || []} />
+      
+      {/* Contact Section */}
+      <Contact profile={profile} />
+    </div>
   )
 } 
