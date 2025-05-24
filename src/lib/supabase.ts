@@ -66,7 +66,7 @@ export function createRouteHandlerClient(request: Request) {
 
 // Middleware Supabase client
 export function createMiddlewareClient(request: Request) {
-  let response = new Response()
+  const response = new Response()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
