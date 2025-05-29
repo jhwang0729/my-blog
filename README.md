@@ -2,148 +2,105 @@
 
 A modern, full-stack personal portfolio and note-taking application built with Next.js, Supabase, and Tailwind CSS.
 
-## 🎯 Features
+## Features
 
-### 📄 Resume Management
-- Upload and store multiple resume versions
-- Public downloadable links for sharing
-- Version control and organization
-- File type validation (PDF, DOCX)
+- **Personal Portfolio**: Showcase your work experience, education, and projects
+- **Resume Management**: Upload, store, and share multiple resume versions
+- **Notion-like Notes**: Create and publish beautifully formatted notes with rich content
+- **Dark/Light Mode**: Full system-preference and manual theme switching
 
-### 📝 Notion-like Note Taking
-- Rich markdown editor with page linking
-- Private editing with public viewing options
-- Customizable page headers with icons and backgrounds
-- Hierarchical note organization
-
-### 🤖 AI Integration
-- ChatGPT API integration for note summarization
-- Intelligent search through notes
-- Content suggestions and improvements
-
-### 🔐 Hidden Authentication
-- Secret login portal (`/admin-portal-xyz`)
-- No visible login buttons on public pages
-- Secure session management with Supabase Auth
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: Next.js 15 with TypeScript and App Router
 - **Styling**: Tailwind CSS with custom design system
-- **Database**: Supabase (PostgreSQL + Authentication + File Storage)
+- **Database**: Supabase (PostgreSQL + Authentication + Storage)
 - **Deployment**: Vercel
-- **UI Components**: Radix UI primitives
-- **State Management**: Zustand for client state, React Query for server state
-- **Rich Text**: Tiptap editor for note-taking
-- **AI**: OpenAI API integration
+- **Components**: Radix UI primitives with custom styling
+- **Content**: Markdown-based content editing with block structure
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+ and npm
-- Supabase account
-- OpenAI API key (optional, for AI features)
+
+- Node.js 18+ and npm/pnpm
+- Supabase account (free tier works for personal use)
 
 ### Installation
 
-1. **Clone and install dependencies:**
+1. Clone the repository:
+
    ```bash
-   git clone <repository-url>
-   cd personal-web-app
-   npm install
+   git clone https://github.com/yourusername/personal-web.git
+   cd personal-web
    ```
 
-2. **Environment setup:**
+2. Install dependencies:
+
+   ```bash
+   npm install
+   # or
+   pnpm install
+   ```
+
+3. Set up environment variables:
+
    ```bash
    cp env.example .env.local
-   # Add your Supabase and OpenAI credentials
    ```
 
-3. **Configure Supabase:**
-   - Create a new Supabase project
-   - Set up the database schema (SQL files coming soon)
-   - Configure authentication settings
-   - Enable file storage
+   Then edit `.env.local` with your Supabase credentials
 
-4. **Start development server:**
+4. Start the development server:
+
    ```bash
    npm run dev
+   # or
+   pnpm dev
    ```
 
-Visit `http://localhost:3000` to see your application.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 src/
-├── app/                     # Next.js App Router
-│   ├── (auth)/             # Hidden auth routes
-│   ├── api/                # API endpoints
-│   ├── notes/              # Note-taking pages
-│   ├── resume/             # Resume management
-│   └── globals.css         # Global styles
-├── components/
-│   ├── ui/                 # Base UI components (Radix UI)
-│   ├── layout/             # Layout components
-│   ├── resume/             # Resume-specific components
-│   ├── notes/              # Note-taking components
-│   └── auth/               # Authentication components
-├── lib/
-│   ├── supabase.ts         # Supabase client configuration
-│   ├── openai.ts           # OpenAI integration
-│   └── utils.ts            # Utility functions
-├── hooks/                  # Custom React hooks
-├── stores/                 # Zustand state stores
-└── types/                  # TypeScript type definitions
+├── app/                     # Next.js App Router pages
+├── components/              # React components
+├── lib/                     # Utility functions and service clients
+├── hooks/                   # Custom React hooks
+├── types/                   # TypeScript type definitions
+└── contexts/                # React contexts for state management
 ```
 
-## 🔧 Development
+## Deployment
 
-### Available Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript checks
+This project is designed to be deployed on Vercel:
 
-### Cursor Rules
-This project includes comprehensive cursor rules in `.cursorrules` for consistent development:
-- TypeScript best practices
-- React patterns and hooks
-- Tailwind CSS conventions
-- Component structure guidelines
+1. Push your code to GitHub
+2. Import the project in Vercel
+3. Configure environment variables
+4. Deploy
 
-## 🚢 Deployment
+## Customization
 
-### Vercel (Recommended)
-1. Connect your GitHub repository to Vercel
-2. Add environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
+### Content
 
-### Environment Variables
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-OPENAI_API_KEY=your_openai_api_key
-NEXT_PUBLIC_APP_URL=https://yourdomain.com
-```
+Edit your personal information in the following files:
 
-## 🔐 Authentication Flow
+- `src/app/page.tsx` - Home page content
+- `src/components/home/` - Portfolio sections
 
-1. **Public Access**: All content is viewable without authentication
-2. **Hidden Login**: Access `/admin-portal-xyz` for authentication
-3. **Editing Mode**: Authenticated users can create/edit content
-4. **Session Management**: Secure sessions with Supabase Auth
+### Styling
 
-## 📝 Contributing
+The project uses Tailwind CSS for styling:
 
-This is a personal project, but feel free to fork and adapt for your own use. Follow the cursor rules and maintain the existing code style.
+- `tailwind.config.js` - Theme configuration
+- `src/app/globals.css` - Global styles
 
-## 📄 License
+## License
 
-MIT License - feel free to use this project as a template for your own personal website.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 
-Built with ❤️ using Next.js, Supabase, and modern web technologies. 
+Built with Next.js and Supabase

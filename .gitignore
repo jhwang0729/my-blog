@@ -134,4 +134,7 @@ NOTES.md
 TODO.md
 
 # Test files and directories
-src/app/test-supabase/ 
+src/app/test-supabase/
+
+# Internal documentation
+INTERNAL_README.md 
