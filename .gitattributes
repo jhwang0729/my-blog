@@ -1,0 +1,43 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Handle binary files properly
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.mp4 binary
+*.mov binary
+*.pdf binary
+*.zip binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+
+# Treat SVGs as text files
+*.svg text
+
+# Set specific diff drivers for certain file types
+*.md diff=markdown
+*.json diff=json
+*.js diff=javascript
+*.ts diff=typescript
+*.tsx diff=typescript
+*.jsx diff=javascript
+*.css diff=css
+
+# Language-specific settings
+*.js linguist-language=JavaScript
+*.jsx linguist-language=JavaScript
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
+*.css linguist-language=CSS
+*.scss linguist-language=SCSS
+*.html linguist-language=HTML
+
+# Mark generated files
+.next/** -diff -merge
+node_modules/** -diff -merge
+package-lock.json -diff -merge 

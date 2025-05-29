@@ -131,4 +131,7 @@ Desktop.ini
 
 # Personal notes (if any)
 NOTES.md
-TODO.md 
+TODO.md
+
+# Test files and directories
+src/app/test-supabase/ 
