@@ -99,7 +99,7 @@ export function BlockRenderer({
           selection.addRange(range)
         }
       }
-    } catch (error) {
+    } catch {
       // Fallback: place cursor at end
       const range = document.createRange()
       range.selectNodeContents(contentRef.current)
@@ -183,20 +183,6 @@ export function BlockRenderer({
     [onContentChange]
   )
 
-  // Handle image upload from React element
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !onImageUpload) return
-
-    try {
-      const url = await onImageUpload(file)
-      onContentChange(url)
-    } catch (error) {
-      console.error('Failed to upload image:', error)
-      alert('Failed to upload image. Please try again.')
-    }
-  }
-
   // Handle image upload from HTML input element
   const handleHTMLInputChange = (e: Event) => {
     const input = e.target as HTMLInputElement
@@ -207,8 +193,8 @@ export function BlockRenderer({
       .then(url => {
         onContentChange(url)
       })
-      .catch(error => {
-        console.error('Failed to upload image:', error)
+      .catch(err => {
+        console.error('Failed to upload image:', err)
         alert('Failed to upload image. Please try again.')
       })
   }

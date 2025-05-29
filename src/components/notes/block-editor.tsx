@@ -27,7 +27,6 @@ export function BlockEditor({ noteId, blocks, onBlocksChange, isEditable = true 
   const [slashMenuPosition, setSlashMenuPosition] = useState({ x: 0, y: 0 })
   const [draggedBlock, setDraggedBlock] = useState<string | null>(null)
   const [selectedBlocks, setSelectedBlocks] = useState<Set<string>>(new Set())
-  const [isSelecting, setIsSelecting] = useState(false)
   const [selectionStart, setSelectionStart] = useState<string | null>(null)
 
   // Undo/Redo history
@@ -38,6 +37,11 @@ export function BlockEditor({ noteId, blocks, onBlocksChange, isEditable = true 
   const editorRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { createBlock, updateBlock, deleteBlock, moveBlock } = useNoteEditor()
+
+  // Helper function to generate unique IDs
+  const generateUUID = (): string => {
+    return `block_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+  }
 
   // Add to history with debouncing
   const addToHistory = useCallback(
@@ -306,10 +310,12 @@ export function BlockEditor({ noteId, blocks, onBlocksChange, isEditable = true 
             block_type: 'code',
             content: codeContent,
             note_id: noteId,
-            metadata: {
+            properties: {
               language: codeLanguage || 'javascript',
             },
-            position: parsedBlocks.length,
+            sort_order: parsedBlocks.length,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           }
 
           parsedBlocks.push(block)
@@ -332,7 +338,10 @@ export function BlockEditor({ noteId, blocks, onBlocksChange, isEditable = true 
           block_type: 'paragraph',
           content: '',
           note_id: noteId,
-          position: parsedBlocks.length,
+          properties: {},
+          sort_order: parsedBlocks.length,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         }
 
         parsedBlocks.push(block)
@@ -398,7 +407,10 @@ export function BlockEditor({ noteId, blocks, onBlocksChange, isEditable = true 
           block_type: blockType,
           content: content,
           note_id: noteId,
-          position: parsedBlocks.length,
+          properties: {},
+          sort_order: parsedBlocks.length,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         }
 
         parsedBlocks.push(block)
@@ -810,51 +822,54 @@ export function BlockEditor({ noteId, blocks, onBlocksChange, isEditable = true 
             className={`group relative ${draggedBlock === block.id ? 'opacity-50' : ''} ${
               selectedBlocks.has(block.id) ? 'rounded-lg bg-blue-50 ring-2 ring-blue-500 dark:bg-blue-900/20' : ''
             }`}
-            draggable={isEditable}
-            onDragStart={e => handleDragStart(e, block.id)}
-            onDragOver={e => handleDragOver(e)}
-            onDrop={e => handleDrop(e, block.id)}
-            onClick={e => handleBlockClick(block.id, e)}
           >
-            {/* Block Controls */}
-            {isEditable && (
-              <div className="absolute left-0 top-0 -ml-12 flex items-center space-x-1 opacity-0 transition-opacity group-hover:opacity-100">
-                <button
-                  className="cursor-grab rounded p-1 hover:bg-gray-100 active:cursor-grabbing dark:hover:bg-gray-700"
-                  aria-label="Drag to reorder"
-                >
-                  <GripVertical className="h-4 w-4 text-gray-400" />
-                </button>
-                <button
-                  onClick={e => {
-                    e.stopPropagation()
-                    const newBlock = createBlock(noteId, 'paragraph', '', index)
-                    setTimeout(() => {
-                      const newElement = document.querySelector(
-                        `[data-block-id="${newBlock.id}"] [contenteditable]`
-                      ) as HTMLElement
-                      newElement?.focus()
-                    }, 50)
-                  }}
-                  className="rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  aria-label="Add block above"
-                >
-                  <Plus className="h-4 w-4 text-gray-400" />
-                </button>
-              </div>
-            )}
+            <div
+              draggable={isEditable}
+              onDragStart={(e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, block.id)}
+              onDragOver={handleDragOver}
+              onDrop={(e: React.DragEvent<HTMLDivElement>) => handleDrop(e, block.id)}
+              onClick={(e: React.MouseEvent) => handleBlockClick(block.id, e)}
+            >
+              {/* Block Controls */}
+              {isEditable && (
+                <div className="absolute left-0 top-0 -ml-12 flex items-center space-x-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button
+                    className="cursor-grab rounded p-1 hover:bg-gray-100 active:cursor-grabbing dark:hover:bg-gray-700"
+                    aria-label="Drag to reorder"
+                  >
+                    <GripVertical className="h-4 w-4 text-gray-400" />
+                  </button>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      const newBlock = createBlock(noteId, 'paragraph', '', index)
+                      setTimeout(() => {
+                        const newElement = document.querySelector(
+                          `[data-block-id="${newBlock.id}"] [contenteditable]`
+                        ) as HTMLElement
+                        newElement?.focus()
+                      }, 50)
+                    }}
+                    className="rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    aria-label="Add block above"
+                  >
+                    <Plus className="h-4 w-4 text-gray-400" />
+                  </button>
+                </div>
+              )}
 
-            {/* Block Content */}
-            <BlockRenderer
-              block={block}
-              isEditable={isEditable}
-              isFocused={focusedBlockId === block.id}
-              onFocus={() => setFocusedBlockId(block.id)}
-              onBlur={() => setFocusedBlockId(null)}
-              onContentChange={(content: string) => handleTextChange(block.id, content)}
-              onKeyDown={(e: React.KeyboardEvent) => handleKeyDown(e, block.id)}
-              onImageUpload={handleImageUpload}
-            />
+              {/* Block Content */}
+              <BlockRenderer
+                block={block}
+                isEditable={isEditable}
+                isFocused={focusedBlockId === block.id}
+                onFocus={() => setFocusedBlockId(block.id)}
+                onBlur={() => setFocusedBlockId(null)}
+                onContentChange={(content: string) => handleTextChange(block.id, content)}
+                onKeyDown={(e: React.KeyboardEvent) => handleKeyDown(e, block.id)}
+                onImageUpload={handleImageUpload}
+              />
+            </div>
           </motion.div>
         ))}
       </AnimatePresence>
