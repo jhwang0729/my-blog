@@ -1,6 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export default function TestSupabasePage() {
@@ -14,7 +15,7 @@ export default function TestSupabasePage() {
         const supabase = createClient()
         
         // Test 1: Basic connection
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+        const { error: sessionError } = await supabase.auth.getSession()
         
         if (sessionError) {
           setStatus('error')
@@ -145,12 +146,12 @@ export default function TestSupabasePage() {
         </div>
         
         <div className="mt-6">
-          <a 
+          <Link 
             href="/" 
             className="text-primary hover:underline"
           >
             ← Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     </div>

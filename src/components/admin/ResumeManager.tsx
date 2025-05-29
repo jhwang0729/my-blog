@@ -8,13 +8,7 @@ import { createClient } from '@/lib/supabase'
 import { formatFileSize } from '@/lib/utils'
 import type { ResumeFile } from '@/types/database'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
-import {
-  Download,
-  FileText,
-  Plus,
-  Trash2,
-  Upload
-} from 'lucide-react'
+import { Download, FileText, Plus, Trash2, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -38,7 +32,11 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
     if (!file) return
 
     // Validate file type
-    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword']
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+    ]
     if (!allowedTypes.includes(file.type)) {
       setError('Please select a PDF or Word document (.pdf, .docx, .doc)')
       return
@@ -69,19 +67,17 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
       // Upload file to Supabase Storage
       const fileExt = selectedFile.name.split('.').pop()
       const fileName_unique = `${user.id}/${Date.now()}.${fileExt}`
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('resumes')
-        .upload(fileName_unique, selectedFile)
+
+      const { error: uploadError } = await supabase.storage.from('resumes').upload(fileName_unique, selectedFile)
 
       if (uploadError) {
         throw uploadError
       }
 
       // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('resumes')
-        .getPublicUrl(fileName_unique)
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('resumes').getPublicUrl(fileName_unique)
 
       // Save file record to database
       const { data: fileRecord, error: dbError } = await supabase
@@ -93,7 +89,7 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
           file_url: publicUrl,
           file_size: selectedFile.size,
           file_type: fileExt,
-          is_public: true
+          is_public: true,
         })
         .select()
         .single()
@@ -107,13 +103,12 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
       setSuccess('Resume uploaded successfully!')
       setSelectedFile(null)
       setFileName('')
-      
+
       // Reset file input
       const fileInput = document.getElementById('file-input') as HTMLInputElement
       if (fileInput) fileInput.value = ''
-
-    } catch (err: any) {
-      setError(`Upload failed: ${err.message}`)
+    } catch (err: unknown) {
+      setError(`Upload failed: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setUploading(false)
     }
@@ -126,9 +121,7 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
 
     try {
       // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('resumes')
-        .remove([filePath])
+      const { error: storageError } = await supabase.storage.from('resumes').remove([filePath])
 
       if (storageError) {
         console.warn('Storage deletion error:', storageError)
@@ -136,10 +129,7 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
       }
 
       // Delete from database
-      const { error: dbError } = await supabase
-        .from('resume_files')
-        .delete()
-        .eq('id', fileId)
+      const { error: dbError } = await supabase.from('resume_files').delete().eq('id', fileId)
 
       if (dbError) {
         throw dbError
@@ -148,9 +138,8 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
       // Update local state
       setFiles(prev => prev.filter(file => file.id !== fileId))
       setSuccess('Resume deleted successfully!')
-
-    } catch (err: any) {
-      setError(`Delete failed: ${err.message}`)
+    } catch (err: unknown) {
+      setError(`Delete failed: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
@@ -166,23 +155,18 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
       window.open(file.file_url, '_blank')
 
       // Update local state
-      setFiles(prev => prev.map(f => 
-        f.id === file.id 
-          ? { ...f, download_count: f.download_count + 1 }
-          : f
-      ))
-
-    } catch (err: any) {
-      setError(`Download failed: ${err.message}`)
+      setFiles(prev => prev.map(f => (f.id === file.id ? { ...f, download_count: f.download_count + 1 } : f)))
+    } catch (err: unknown) {
+      setError(`Download failed: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <header className="border-b bg-white shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600">
                 <FileText className="h-5 w-5 text-white" />
@@ -191,12 +175,8 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
                 <h1 className="text-xl font-semibold text-gray-900">Resume Manager</h1>
               </div>
             </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => router.push('/admin')}
-            >
+
+            <Button variant="outline" size="sm" onClick={() => router.push('/admin')}>
               ← Back to Dashboard
             </Button>
           </div>
@@ -204,7 +184,7 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Upload Section */}
         <Card className="mb-8">
           <CardHeader>
@@ -222,7 +202,7 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             {success && (
               <Alert>
                 <AlertDescription className="text-green-600">{success}</AlertDescription>
@@ -231,7 +211,7 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label htmlFor="file-input" className="text-sm font-medium text-gray-700 mb-2 block">
+                <label htmlFor="file-input" className="mb-2 block text-sm font-medium text-gray-700">
                   Select File
                 </label>
                 <Input
@@ -242,14 +222,14 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
                   disabled={uploading}
                 />
                 {selectedFile && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="mt-1 text-sm text-gray-500">
                     Selected: {selectedFile.name} ({formatFileSize(selectedFile.size)})
                   </p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="file-name" className="text-sm font-medium text-gray-700 mb-2 block">
+                <label htmlFor="file-name" className="mb-2 block text-sm font-medium text-gray-700">
                   Display Name
                 </label>
                 <Input
@@ -257,13 +237,13 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
                   type="text"
                   placeholder="e.g., Software Engineer Resume"
                   value={fileName}
-                  onChange={(e) => setFileName(e.target.value)}
+                  onChange={e => setFileName(e.target.value)}
                   disabled={uploading}
                 />
               </div>
             </div>
 
-            <Button 
+            <Button
               onClick={handleUpload}
               disabled={!selectedFile || !fileName.trim() || uploading}
               className="w-full md:w-auto"
@@ -275,7 +255,7 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
                 </div>
               ) : (
                 <>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Upload Resume
                 </>
               )}
@@ -287,23 +267,21 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
         <Card>
           <CardHeader>
             <CardTitle>Your Resume Files</CardTitle>
-            <CardDescription>
-              Manage your uploaded resume files. All files are publicly downloadable.
-            </CardDescription>
+            <CardDescription>Manage your uploaded resume files. All files are publicly downloadable.</CardDescription>
           </CardHeader>
           <CardContent>
             {files.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <div className="py-8 text-center text-gray-500">
+                <FileText className="mx-auto mb-4 h-12 w-12 text-gray-300" />
                 <p>No resume files uploaded yet.</p>
                 <p className="text-sm">Upload your first resume file above.</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {files.map((file) => (
-                  <div 
-                    key={file.id} 
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                {files.map(file => (
+                  <div
+                    key={file.id}
+                    className="flex items-center justify-between rounded-lg border p-4 hover:bg-gray-50"
                   >
                     <div className="flex items-center space-x-4">
                       <FileText className="h-8 w-8 text-gray-400" />
@@ -313,18 +291,14 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
                           {file.original_filename} • {formatFileSize(file.file_size || 0)}
                         </p>
                         <p className="text-xs text-gray-400">
-                          Uploaded {new Date(file.created_at).toLocaleDateString()} • 
-                          Downloaded {file.download_count} times
+                          Uploaded {new Date(file.created_at).toLocaleDateString()} • Downloaded {file.download_count}{' '}
+                          times
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownload(file)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleDownload(file)}>
                         <Download className="h-4 w-4" />
                       </Button>
                       <Button
@@ -344,4 +318,4 @@ export default function ResumeManager({ user, initialFiles }: ResumeManagerProps
       </main>
     </div>
   )
-} 
+}

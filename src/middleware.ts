@@ -4,11 +4,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes that require authentication (DO NOT include login page here)
 const protectedRoutes = [
-  '/admin/',  // Only match /admin/ and paths that start with /admin/
+  '/admin/', // Only match /admin/ and paths that start with /admin/
   '/notes/edit',
   '/resume/upload',
   '/resume/edit',
-  '/api/admin'
+  '/api/admin',
 ]
 
 // Routes that should redirect to admin if user is already authenticated
@@ -34,9 +34,7 @@ export async function middleware(request: NextRequest) {
           response = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
         },
       },
     }
@@ -45,11 +43,10 @@ export async function middleware(request: NextRequest) {
   // Refresh session if expired - required for Server Components
   const {
     data: { user },
-    error,
   } = await supabase.auth.getUser()
 
   const currentPath = request.nextUrl.pathname
-  
+
   // More precise route matching
   const isProtectedRoute = protectedRoutes.some(route => {
     if (route.endsWith('/')) {
@@ -59,7 +56,7 @@ export async function middleware(request: NextRequest) {
     // For other routes, exact match or starting with route + '/'
     return currentPath === route || currentPath.startsWith(route + '/')
   })
-  
+
   const isAuthRoute = authRoutes.includes(currentPath)
 
   // If user is not authenticated and trying to access protected route
@@ -88,4 +85,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-} 
+}

@@ -11,21 +11,11 @@ export default async function HomePage() {
   const supabase = await createServerSupabaseClient()
 
   // Get profile data
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .single()
+  const { data: profile } = await supabase.from('profiles').select('*').single()
 
   // Get work experiences
   const { data: experiences } = await supabase
     .from('work_experiences')
-    .select('*')
-    .eq('is_visible', true)
-    .order('display_order', { ascending: true })
-
-  // Get education
-  const { data: education } = await supabase
-    .from('education')
     .select('*')
     .eq('is_visible', true)
     .order('display_order', { ascending: true })
@@ -45,26 +35,26 @@ export default async function HomePage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="min-h-screen bg-portfolio">
+    <div className="bg-portfolio min-h-screen">
       <Navigation />
-      
+
       {/* Hero Section */}
       <Hero profile={profile} />
-      
+
       {/* About Section */}
       <About profile={profile} />
-      
+
       {/* Experience Section */}
       <Experience experiences={experiences || []} />
-      
+
       {/* Skills Section */}
       <Skills skills={skills || []} />
-      
+
       {/* Resume Download Section */}
       <ResumeSection resumeFiles={resumeFiles || []} />
-      
+
       {/* Contact Section */}
       <Contact profile={profile} />
     </div>
   )
-} 
+}

@@ -3,15 +3,7 @@
 import { BlockEditor } from '@/components/notes/block-editor'
 import type { Note, NoteBlock } from '@/types/notes'
 import { motion } from 'framer-motion'
-import {
-    ArrowLeft,
-    Eye,
-    Globe,
-    Lock,
-    MoreHorizontal,
-    Save,
-    Trash2
-} from 'lucide-react'
+import { ArrowLeft, Eye, Globe, Lock, MoreHorizontal, Save, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -27,7 +19,7 @@ export default function EditNotePage() {
   const [saving, setSaving] = useState(false)
   const [title, setTitle] = useState('')
   const [icon, setIcon] = useState('📝')
-  
+
   const titleInputRef = useRef<HTMLInputElement>(null)
   const saveTimeoutRef = useRef<NodeJS.Timeout>()
 
@@ -37,7 +29,7 @@ export default function EditNotePage() {
       try {
         const response = await fetch(`/api/notes/${noteId}`)
         const data = await response.json()
-        
+
         if (response.ok) {
           setNote(data.note)
           setTitle(data.note.title)
@@ -74,8 +66,8 @@ export default function EditNotePage() {
         body: JSON.stringify({
           title,
           icon,
-          blocks
-        })
+          blocks,
+        }),
       })
 
       if (!response.ok) {
@@ -89,7 +81,7 @@ export default function EditNotePage() {
     }
   }
 
-  // Debounced auto-save
+  // Debounced auto-save for title/icon
   useEffect(() => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
@@ -106,7 +98,7 @@ export default function EditNotePage() {
         clearTimeout(saveTimeoutRef.current)
       }
     }
-  }, [title, icon])
+  }, [title, icon, autoSave, note])
 
   // Debounced auto-save for blocks
   useEffect(() => {
@@ -115,7 +107,8 @@ export default function EditNotePage() {
     }
 
     saveTimeoutRef.current = setTimeout(() => {
-      if (note && blocks.length >= 0) { // Save even if blocks array is empty
+      if (note && blocks.length >= 0) {
+        // Save even if blocks array is empty
         autoSave()
       }
     }, 1000)
@@ -125,7 +118,7 @@ export default function EditNotePage() {
         clearTimeout(saveTimeoutRef.current)
       }
     }
-  }, [blocks])
+  }, [blocks, autoSave, note])
 
   // Handle block editor events
   useEffect(() => {
@@ -140,9 +133,7 @@ export default function EditNotePage() {
 
     const handleBlockUpdated = (e: CustomEvent) => {
       const { blockId, updates } = e.detail
-      setBlocks(prev => prev.map(block => 
-        block.id === blockId ? { ...block, ...updates } : block
-      ))
+      setBlocks(prev => prev.map(block => (block.id === blockId ? { ...block, ...updates } : block)))
     }
 
     const handleBlockDeleted = (e: CustomEvent) => {
@@ -155,7 +146,7 @@ export default function EditNotePage() {
       setBlocks(prev => {
         const blockIndex = prev.findIndex(b => b.id === blockId)
         if (blockIndex === -1) return prev
-        
+
         const newBlocks = [...prev]
         const [movedBlock] = newBlocks.splice(blockIndex, 1)
         newBlocks.splice(newIndex, 0, movedBlock)
@@ -187,12 +178,12 @@ export default function EditNotePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          is_published: !note.is_published
-        })
+          is_published: !note.is_published,
+        }),
       })
 
       if (response.ok) {
-        setNote(prev => prev ? { ...prev, is_published: !prev.is_published } : null)
+        setNote(prev => (prev ? { ...prev, is_published: !prev.is_published } : null))
       }
     } catch (error) {
       console.error('Error toggling publish status:', error)
@@ -205,7 +196,7 @@ export default function EditNotePage() {
 
     try {
       const response = await fetch(`/api/notes/${noteId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
       if (response.ok) {
@@ -218,23 +209,18 @@ export default function EditNotePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   if (!note) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Note not found
-          </h2>
-          <Link
-            href="/admin/notes"
-            className="text-blue-600 hover:text-blue-700"
-          >
+          <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Note not found</h2>
+          <Link href="/admin/notes" className="text-blue-600 hover:text-blue-700">
             Back to notes
           </Link>
         </div>
@@ -245,26 +231,26 @@ export default function EditNotePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
+        <div className="mx-auto max-w-4xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link
                 href="/admin/notes"
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className="rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </Link>
-              
+
               <div className="flex items-center space-x-2">
                 {saving ? (
                   <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
                     <span>Saving...</span>
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2 text-sm text-green-600 dark:text-green-400">
-                    <Save className="w-4 h-4" />
+                    <Save className="h-4 w-4" />
                     <span>Saved</span>
                   </div>
                 )}
@@ -275,22 +261,22 @@ export default function EditNotePage() {
               {/* Publish Toggle */}
               <motion.button
                 onClick={togglePublished}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   note.is_published
-                    ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                 }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 {note.is_published ? (
                   <>
-                    <Globe className="w-4 h-4" />
+                    <Globe className="h-4 w-4" />
                     <span>Published</span>
                   </>
                 ) : (
                   <>
-                    <Lock className="w-4 h-4" />
+                    <Lock className="h-4 w-4" />
                     <span>Draft</span>
                   </>
                 )}
@@ -300,17 +286,17 @@ export default function EditNotePage() {
               {note.is_published && (
                 <Link
                   href={`/notes/${note.slug}`}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors text-sm font-medium"
+                  className="flex items-center space-x-2 rounded-lg bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
                 >
-                  <Eye className="w-4 h-4" />
+                  <Eye className="h-4 w-4" />
                   <span>Preview</span>
                 </Link>
               )}
 
               {/* More Options */}
               <div className="relative">
-                <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                  <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <button className="rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <MoreHorizontal className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                 </button>
               </div>
             </div>
@@ -321,11 +307,11 @@ export default function EditNotePage() {
       {/* Editor Content */}
       <main className="pb-32">
         {/* Title Section */}
-        <div className="max-w-4xl mx-auto px-6 pt-8">
-          <div className="flex items-center space-x-4 mb-8">
+        <div className="mx-auto max-w-4xl px-6 pt-8">
+          <div className="mb-8 flex items-center space-x-4">
             {/* Icon Picker */}
             <button
-              className="text-4xl hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors"
+              className="rounded-lg p-2 text-4xl transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
               title="Change icon"
             >
               {icon}
@@ -336,34 +322,29 @@ export default function EditNotePage() {
               ref={titleInputRef}
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={e => setTitle(e.target.value)}
               placeholder="Untitled"
-              className="flex-1 text-4xl font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none placeholder-gray-400"
+              className="flex-1 border-none bg-transparent text-4xl font-bold text-gray-900 placeholder-gray-400 outline-none dark:text-white"
             />
           </div>
         </div>
 
         {/* Block Editor */}
-        <BlockEditor
-          noteId={noteId}
-          blocks={blocks}
-          onBlocksChange={setBlocks}
-          isEditable={true}
-        />
+        <BlockEditor noteId={noteId} blocks={blocks} onBlocksChange={setBlocks} isEditable={true} />
       </main>
 
       {/* Footer Actions */}
       <div className="fixed bottom-6 right-6">
         <motion.button
           onClick={deleteNote}
-          className="p-3 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 rounded-full hover:bg-red-200 dark:hover:bg-red-800 transition-colors shadow-lg"
+          className="rounded-full bg-red-100 p-3 text-red-600 shadow-lg transition-colors hover:bg-red-200 dark:bg-red-900 dark:text-red-400 dark:hover:bg-red-800"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           title="Delete note"
         >
-          <Trash2 className="w-5 h-5" />
+          <Trash2 className="h-5 w-5" />
         </motion.button>
       </div>
     </div>
   )
-} 
+}

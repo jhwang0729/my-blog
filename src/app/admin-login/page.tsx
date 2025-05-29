@@ -39,7 +39,7 @@ export default function AdminPortalPage() {
         router.push('/admin')
         router.refresh()
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -47,16 +47,14 @@ export default function AdminPortalPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
             <Lock className="h-6 w-6 text-blue-600" />
           </div>
           <CardTitle className="text-2xl font-bold">Admin Portal</CardTitle>
-          <CardDescription>
-            Access restricted to authorized personnel only
-          </CardDescription>
+          <CardDescription>Access restricted to authorized personnel only</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -78,7 +76,7 @@ export default function AdminPortalPage() {
                   type="email"
                   placeholder="admin@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   className="pl-10"
                   required
                   disabled={isLoading}
@@ -97,7 +95,7 @@ export default function AdminPortalPage() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   className="pl-10 pr-10"
                   required
                   disabled={isLoading}
@@ -127,7 +125,7 @@ export default function AdminPortalPage() {
 
           <div className="mt-6 text-center">
             <p className="text-xs text-gray-500">
-              This portal is for authorized access only. 
+              This portal is for authorized access only.
               <br />
               Unauthorized access attempts are logged.
             </p>
@@ -136,4 +134,4 @@ export default function AdminPortalPage() {
       </Card>
     </div>
   )
-} 
+}

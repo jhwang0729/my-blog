@@ -1,26 +1,28 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { NoteBlock } from '@/types/notes'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/notes/[id] - Get a specific note
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createServerSupabaseClient()
     const { id: noteId } = await params
 
     // Check if user is authenticated (admin)
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     const isAdmin = !!user
 
     let query = supabase
       .from('notes')
-      .select(`
+      .select(
+        `
         *,
         blocks:note_blocks(*),
         parent_note:notes!parent_note_id(id, title, slug, icon)
-      `)
+      `
+      )
       .eq('id', noteId)
 
     // If not admin, only allow published notes
@@ -44,7 +46,6 @@ export async function GET(
     }
 
     return NextResponse.json({ note })
-
   } catch (error) {
     console.error('API Error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -52,26 +53,26 @@ export async function GET(
 }
 
 // PATCH /api/notes/[id] - Update a note
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createServerSupabaseClient()
     const { id: noteId } = await params
 
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
-    
+
     // Prepare update data
-    const updateData: any = {
+    const updateData: Record<string, string | boolean | number | Date> = {
       last_edited_by: user.id,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     }
 
     // Add fields that are being updated
@@ -88,10 +89,12 @@ export async function PATCH(
       .update(updateData)
       .eq('id', noteId)
       .eq('user_id', user.id) // Ensure user owns the note
-      .select(`
+      .select(
+        `
         *,
         parent_note:notes!parent_note_id(id, title, slug, icon)
-      `)
+      `
+      )
       .single()
 
     if (error) {
@@ -102,25 +105,20 @@ export async function PATCH(
     // Handle blocks update if provided
     if (body.blocks && Array.isArray(body.blocks)) {
       // Delete existing blocks
-      await supabase
-        .from('note_blocks')
-        .delete()
-        .eq('note_id', noteId)
+      await supabase.from('note_blocks').delete().eq('note_id', noteId)
 
       // Insert new blocks
       if (body.blocks.length > 0) {
-        const blocksToInsert = body.blocks.map((block: any, index: number) => ({
+        const blocksToInsert = body.blocks.map((block: NoteBlock, index: number) => ({
           note_id: noteId,
           block_type: block.block_type,
           content: block.content,
           properties: block.properties || {},
           sort_order: index,
-          parent_block_id: block.parent_block_id || null
+          parent_block_id: block.parent_block_id || null,
         }))
 
-        const { error: blocksError } = await supabase
-          .from('note_blocks')
-          .insert(blocksToInsert)
+        const { error: blocksError } = await supabase.from('note_blocks').insert(blocksToInsert)
 
         if (blocksError) {
           console.error('Error updating blocks:', blocksError)
@@ -130,7 +128,6 @@ export async function PATCH(
     }
 
     return NextResponse.json({ note })
-
   } catch (error) {
     console.error('API Error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -138,26 +135,22 @@ export async function PATCH(
 }
 
 // DELETE /api/notes/[id] - Delete a note
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createServerSupabaseClient()
     const { id: noteId } = await params
 
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Delete the note (cascading deletes will handle blocks, comments, etc.)
-    const { error } = await supabase
-      .from('notes')
-      .delete()
-      .eq('id', noteId)
-      .eq('user_id', user.id) // Ensure user owns the note
+    const { error } = await supabase.from('notes').delete().eq('id', noteId).eq('user_id', user.id) // Ensure user owns the note
 
     if (error) {
       console.error('Error deleting note:', error)
@@ -165,9 +158,8 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true })
-
   } catch (error) {
     console.error('API Error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-} 
+}

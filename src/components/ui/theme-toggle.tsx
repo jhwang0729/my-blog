@@ -4,15 +4,10 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Monitor, Moon, Sun } from 'lucide-react'
 import { Button } from './button'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from './dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu'
 
 export function ThemeToggle() {
-  const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
+  const { theme, resolvedTheme, setTheme } = useTheme()
 
   return (
     <DropdownMenu>
@@ -20,7 +15,7 @@ export function ThemeToggle() {
         <Button
           variant="ghost"
           size="sm"
-          className="relative w-10 h-10 rounded-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-white/30 dark:border-slate-700/50 hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="relative h-10 w-10 rounded-full border border-white/30 bg-white/70 shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-white/90 hover:shadow-xl dark:border-slate-700/50 dark:bg-slate-800/70 dark:hover:bg-slate-800/90"
         >
           <AnimatePresence mode="wait" initial={false}>
             {resolvedTheme === 'light' ? (
@@ -29,7 +24,7 @@ export function ThemeToggle() {
                 initial={{ scale: 0, rotate: -90 }}
                 animate={{ scale: 1, rotate: 0 }}
                 exit={{ scale: 0, rotate: 90 }}
-                transition={{ duration: 0.3, type: "spring" }}
+                transition={{ duration: 0.3, type: 'spring' }}
               >
                 <Sun className="h-4 w-4 text-orange-500" />
               </motion.div>
@@ -39,7 +34,7 @@ export function ThemeToggle() {
                 initial={{ scale: 0, rotate: 90 }}
                 animate={{ scale: 1, rotate: 0 }}
                 exit={{ scale: 0, rotate: -90 }}
-                transition={{ duration: 0.3, type: "spring" }}
+                transition={{ duration: 0.3, type: 'spring' }}
               >
                 <Moon className="h-4 w-4 text-blue-400" />
               </motion.div>
@@ -48,13 +43,13 @@ export function ThemeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
-        className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 shadow-xl"
+      <DropdownMenuContent
+        align="end"
+        className="border border-white/20 bg-white/90 shadow-xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/90"
       >
         <DropdownMenuItem
           onClick={() => setTheme('light')}
-          className="flex items-center space-x-2 hover:bg-blue-50 dark:hover:bg-slate-700/50 transition-colors"
+          className="flex items-center space-x-2 transition-colors hover:bg-blue-50 dark:hover:bg-slate-700/50"
         >
           <Sun className="h-4 w-4 text-orange-500" />
           <span>Light</span>
@@ -62,13 +57,13 @@ export function ThemeToggle() {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="ml-auto w-2 h-2 bg-blue-500 rounded-full"
+              className="ml-auto h-2 w-2 rounded-full bg-blue-500"
             />
           )}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme('dark')}
-          className="flex items-center space-x-2 hover:bg-blue-50 dark:hover:bg-slate-700/50 transition-colors"
+          className="flex items-center space-x-2 transition-colors hover:bg-blue-50 dark:hover:bg-slate-700/50"
         >
           <Moon className="h-4 w-4 text-blue-400" />
           <span>Dark</span>
@@ -76,13 +71,13 @@ export function ThemeToggle() {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="ml-auto w-2 h-2 bg-blue-500 rounded-full"
+              className="ml-auto h-2 w-2 rounded-full bg-blue-500"
             />
           )}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme('system')}
-          className="flex items-center space-x-2 hover:bg-blue-50 dark:hover:bg-slate-700/50 transition-colors"
+          className="flex items-center space-x-2 transition-colors hover:bg-blue-50 dark:hover:bg-slate-700/50"
         >
           <Monitor className="h-4 w-4 text-gray-500" />
           <span>System</span>
@@ -90,7 +85,7 @@ export function ThemeToggle() {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="ml-auto w-2 h-2 bg-blue-500 rounded-full"
+              className="ml-auto h-2 w-2 rounded-full bg-blue-500"
             />
           )}
         </DropdownMenuItem>
@@ -108,7 +103,7 @@ export function SimpleThemeToggle() {
       variant="ghost"
       size="sm"
       onClick={toggleTheme}
-      className="relative w-10 h-10 rounded-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-white/30 dark:border-slate-700/50 hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110"
+      className="relative h-10 w-10 rounded-full border border-white/30 bg-white/70 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/90 hover:shadow-xl dark:border-slate-700/50 dark:bg-slate-800/70 dark:hover:bg-slate-800/90"
     >
       <AnimatePresence mode="wait" initial={false}>
         {resolvedTheme === 'light' ? (
@@ -117,7 +112,7 @@ export function SimpleThemeToggle() {
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, rotate: 180 }}
-            transition={{ duration: 0.4, type: "spring", damping: 15 }}
+            transition={{ duration: 0.4, type: 'spring', damping: 15 }}
           >
             <Sun className="h-4 w-4 text-orange-500" />
           </motion.div>
@@ -127,7 +122,7 @@ export function SimpleThemeToggle() {
             initial={{ scale: 0, rotate: 180 }}
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, rotate: -180 }}
-            transition={{ duration: 0.4, type: "spring", damping: 15 }}
+            transition={{ duration: 0.4, type: 'spring', damping: 15 }}
           >
             <Moon className="h-4 w-4 text-blue-400" />
           </motion.div>
@@ -136,4 +131,4 @@ export function SimpleThemeToggle() {
       <span className="sr-only">Toggle theme</span>
     </Button>
   )
-} 
+}
