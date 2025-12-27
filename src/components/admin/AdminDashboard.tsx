@@ -4,15 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
-import {
-    BarChart3,
-    Edit3,
-    LogOut,
-    Settings,
-    Shield,
-    Upload,
-    User
-} from 'lucide-react'
+import { BarChart3, Edit3, LogOut, Settings, Shield, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -27,7 +19,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
-    
+
     try {
       await supabase.auth.signOut()
       router.push('/')
@@ -41,18 +33,18 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
 
   const dashboardItems = [
     {
-      title: 'Profile Management',
-      description: 'Update your personal information and contact details',
-      icon: User,
-      href: '/admin/profile',
-      color: 'bg-blue-500',
-    },
-    {
       title: 'Work Experience',
       description: 'Manage your work history and job details',
       icon: BarChart3,
       href: '/admin/experience',
       color: 'bg-green-500',
+    },
+    {
+      title: 'Skills & Technologies',
+      description: 'Manage your technical skills and proficiency levels',
+      icon: Settings,
+      href: '/admin/skills',
+      color: 'bg-indigo-500',
     },
     {
       title: 'Resume Files',
@@ -68,21 +60,14 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       href: '/admin/notes',
       color: 'bg-orange-500',
     },
-    {
-      title: 'Settings',
-      description: 'Configure site settings and preferences',
-      icon: Settings,
-      href: '/admin/settings',
-      color: 'bg-gray-500',
-    },
   ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <header className="border-b bg-white shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
                 <Shield className="h-5 w-5 text-white" />
@@ -91,17 +76,12 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                 <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-600">
                 Welcome, <span className="font-medium">{user.email}</span>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-              >
+              <Button variant="outline" size="sm" onClick={handleLogout} disabled={isLoggingOut}>
                 {isLoggingOut ? (
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
@@ -109,7 +89,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                   </div>
                 ) : (
                   <>
-                    <LogOut className="h-4 w-4 mr-2" />
+                    <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </>
                 )}
@@ -120,10 +100,10 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Content Management</h2>
+          <h2 className="mb-2 text-2xl font-bold text-gray-900">Content Management</h2>
           <p className="text-gray-600">
             Manage your personal website content, resume files, and notes from this central dashboard.
           </p>
@@ -131,12 +111,12 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
 
         {/* Dashboard Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {dashboardItems.map((item) => {
+          {dashboardItems.map(item => {
             const Icon = item.icon
             return (
-              <Card 
-                key={item.href} 
-                className="group cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1"
+              <Card
+                key={item.href}
+                className="group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg"
                 onClick={() => router.push(item.href)}
               >
                 <CardHeader>
@@ -145,16 +125,14 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                       <Icon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">
+                      <CardTitle className="text-lg transition-colors group-hover:text-blue-600">
                         {item.title}
                       </CardTitle>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-sm">
-                    {item.description}
-                  </CardDescription>
+                  <CardDescription className="text-sm">{item.description}</CardDescription>
                 </CardContent>
               </Card>
             )
@@ -185,4 +163,4 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       </main>
     </div>
   )
-} 
+}

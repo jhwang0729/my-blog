@@ -1,5 +1,6 @@
 import About from '@/components/portfolio/About'
 import Contact from '@/components/portfolio/Contact'
+import Education from '@/components/portfolio/Education'
 import Experience from '@/components/portfolio/Experience'
 import Hero from '@/components/portfolio/Hero'
 import Navigation from '@/components/portfolio/Navigation'
@@ -13,9 +14,30 @@ export default async function HomePage() {
   // Get profile data
   const { data: profile } = await supabase.from('profiles').select('*').single()
 
-  // Get work experiences
-  const { data: experiences } = await supabase
+  // Get work experiences with projects
+  const { data: experiencesData } = await supabase
     .from('work_experiences')
+    .select('*')
+    .eq('is_visible', true)
+    .order('display_order', { ascending: true })
+
+  // Fetch projects for each experience
+  const experiences = await Promise.all(
+    (experiencesData || []).map(async exp => {
+      const { data: projectsData } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('work_experience_id', exp.id)
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true })
+
+      return { ...exp, projects: projectsData || [] }
+    })
+  )
+
+  // Get education
+  const { data: education } = await supabase
+    .from('education')
     .select('*')
     .eq('is_visible', true)
     .order('display_order', { ascending: true })
@@ -46,6 +68,9 @@ export default async function HomePage() {
 
       {/* Experience Section */}
       <Experience experiences={experiences || []} />
+
+      {/* Education Section */}
+      <Education education={education || []} />
 
       {/* Skills Section */}
       <Skills skills={skills || []} />

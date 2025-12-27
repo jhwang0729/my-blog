@@ -1,51 +1,40 @@
 // Database types for Supabase integration - Updated to match final schema
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
-
-export interface Database {
+export type Database = {
   public: {
     Tables: {
-      profiles: {
+      activity_logs: {
         Row: {
           id: string
-          email: string | null
-          full_name: string | null
-          bio: string | null
-          avatar_url: string | null
-          website: string | null
-          location: string | null
-          phone: string | null
-          linkedin_url: string | null
-          github_url: string | null
+          user_id: string | null
+          action: string
+          entity_type: string | null
+          entity_id: string | null
+          details: Json | null
+          ip_address: string | null
+          user_agent: string | null
           created_at: string
-          updated_at: string
         }
         Insert: {
-          id: string
-          email?: string | null
-          full_name?: string | null
-          bio?: string | null
-          avatar_url?: string | null
-          website?: string | null
-          location?: string | null
-          phone?: string | null
-          linkedin_url?: string | null
-          github_url?: string | null
+          id?: string
+          user_id?: string | null
+          action: string
+          entity_type?: string | null
+          entity_id?: string | null
+          details?: Json | null
+          ip_address?: string | null
+          user_agent?: string | null
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
-          email?: string | null
-          full_name?: string | null
-          bio?: string | null
-          avatar_url?: string | null
-          website?: string | null
-          location?: string | null
-          phone?: string | null
-          linkedin_url?: string | null
-          github_url?: string | null
+          user_id?: string | null
+          action?: string
+          entity_type?: string | null
+          entity_id?: string | null
+          details?: Json | null
+          ip_address?: string | null
+          user_agent?: string | null
           created_at?: string
-          updated_at?: string
         }
       }
       work_experiences: {
@@ -289,8 +278,11 @@ export interface Database {
           file_url: string
           file_size: number | null
           file_type: string | null
+          upload_date: string
           download_count: number
           is_public: boolean
+          version: string | null
+          description: string | null
           created_at: string
           updated_at: string
         }
@@ -302,8 +294,11 @@ export interface Database {
           file_url: string
           file_size?: number | null
           file_type?: string | null
+          upload_date?: string
           download_count?: number
           is_public?: boolean
+          version?: string | null
+          description?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -315,8 +310,64 @@ export interface Database {
           file_url?: string
           file_size?: number | null
           file_type?: string | null
+          upload_date?: string
           download_count?: number
           is_public?: boolean
+          version?: string | null
+          description?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      profiles: {
+        Row: {
+          id: string
+          email: string | null
+          full_name: string | null
+          first_name: string | null
+          last_name: string | null
+          bio: string | null
+          location: string | null
+          website: string | null
+          linkedin: string | null
+          github: string | null
+          twitter: string | null
+          avatar_url: string | null
+          phone: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email?: string | null
+          full_name?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          bio?: string | null
+          location?: string | null
+          website?: string | null
+          linkedin?: string | null
+          github?: string | null
+          twitter?: string | null
+          avatar_url?: string | null
+          phone?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string | null
+          full_name?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          bio?: string | null
+          location?: string | null
+          website?: string | null
+          linkedin?: string | null
+          github?: string | null
+          twitter?: string | null
+          avatar_url?: string | null
+          phone?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -326,14 +377,12 @@ export interface Database {
           id: string
           user_id: string
           title: string
-          content: string
-          slug: string | null
-          icon: string
+          content: string | null
+          slug: string
+          icon: string | null
           header_image: string | null
           parent_note_id: string | null
           is_published: boolean
-          is_archived: boolean
-          view_count: number
           created_at: string
           updated_at: string
         }
@@ -341,14 +390,12 @@ export interface Database {
           id?: string
           user_id: string
           title: string
-          content?: string
-          slug?: string | null
-          icon?: string
+          content?: string | null
+          slug: string
+          icon?: string | null
           header_image?: string | null
           parent_note_id?: string | null
           is_published?: boolean
-          is_archived?: boolean
-          view_count?: number
           created_at?: string
           updated_at?: string
         }
@@ -356,14 +403,12 @@ export interface Database {
           id?: string
           user_id?: string
           title?: string
-          content?: string
-          slug?: string | null
-          icon?: string
+          content?: string | null
+          slug?: string
+          icon?: string | null
           header_image?: string | null
           parent_note_id?: string | null
           is_published?: boolean
-          is_archived?: boolean
-          view_count?: number
           created_at?: string
           updated_at?: string
         }
@@ -408,120 +453,104 @@ export interface Database {
           created_at?: string
         }
       }
-      activity_logs: {
-        Row: {
-          id: string
-          user_id: string
-          action: string
-          resource_type: string
-          resource_id: string
-          metadata: Json
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          action: string
-          resource_type: string
-          resource_id: string
-          metadata?: Json
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          action?: string
-          resource_type?: string
-          resource_id?: string
-          metadata?: Json
-          created_at?: string
-        }
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      log_activity: {
-        Args: {
-          p_action: string
-          p_resource_type: string
-          p_resource_id: string
-          p_metadata?: Json
-        }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
       [_ in never]: never
     }
   }
 }
 
-// Convenience types for common use cases
+type PublicSchema = Database[keyof Database]
+
+export type Tables<
+  PublicTableNameOrOptions extends keyof (PublicSchema['Tables'] & PublicSchema['Views']) | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions['schema']]['Tables'] &
+        Database[PublicTableNameOrOptions['schema']]['Views'])
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions['schema']]['Tables'] &
+      Database[PublicTableNameOrOptions['schema']]['Views'])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (PublicSchema['Tables'] & PublicSchema['Views'])
+    ? (PublicSchema['Tables'] & PublicSchema['Views'])[PublicTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends keyof PublicSchema['Tables'] | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema['Tables']
+    ? PublicSchema['Tables'][PublicTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends keyof PublicSchema['Tables'] | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema['Tables']
+    ? PublicSchema['Tables'][PublicTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  PublicEnumNameOrOptions extends keyof PublicSchema['Enums'] | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions['schema']]['Enums']
+    : never = never,
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema['Enums']
+    ? PublicSchema['Enums'][PublicEnumNameOrOptions]
+    : never
+
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+
+// Only keep commonly used Row types
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type WorkExperience = Database['public']['Tables']['work_experiences']['Row']
 export type Education = Database['public']['Tables']['education']['Row']
 export type Project = Database['public']['Tables']['projects']['Row']
 export type Skill = Database['public']['Tables']['skills']['Row']
-export type Certification = Database['public']['Tables']['certifications']['Row']
 export type ResumeFile = Database['public']['Tables']['resume_files']['Row']
 export type Note = Database['public']['Tables']['notes']['Row']
-export type NoteLink = Database['public']['Tables']['note_links']['Row']
-export type NoteTag = Database['public']['Tables']['note_tags']['Row']
-export type ActivityLog = Database['public']['Tables']['activity_logs']['Row']
-
-// Insert types
-export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
-export type WorkExperienceInsert = Database['public']['Tables']['work_experiences']['Insert']
-export type EducationInsert = Database['public']['Tables']['education']['Insert']
-export type ProjectInsert = Database['public']['Tables']['projects']['Insert']
-export type SkillInsert = Database['public']['Tables']['skills']['Insert']
-export type CertificationInsert = Database['public']['Tables']['certifications']['Insert']
-export type ResumeFileInsert = Database['public']['Tables']['resume_files']['Insert']
-export type NoteInsert = Database['public']['Tables']['notes']['Insert']
-export type NoteLinkInsert = Database['public']['Tables']['note_links']['Insert']
-export type NoteTagInsert = Database['public']['Tables']['note_tags']['Insert']
-export type ActivityLogInsert = Database['public']['Tables']['activity_logs']['Insert']
-
-// Update types
-export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
-export type WorkExperienceUpdate = Database['public']['Tables']['work_experiences']['Update']
-export type EducationUpdate = Database['public']['Tables']['education']['Update']
-export type ProjectUpdate = Database['public']['Tables']['projects']['Update']
-export type SkillUpdate = Database['public']['Tables']['skills']['Update']
-export type CertificationUpdate = Database['public']['Tables']['certifications']['Update']
-export type ResumeFileUpdate = Database['public']['Tables']['resume_files']['Update']
-export type NoteUpdate = Database['public']['Tables']['notes']['Update']
-export type NoteLinkUpdate = Database['public']['Tables']['note_links']['Update']
-export type NoteTagUpdate = Database['public']['Tables']['note_tags']['Update']
-export type ActivityLogUpdate = Database['public']['Tables']['activity_logs']['Update']
-
-// Extended types with relationships
-export type WorkExperienceWithProjects = WorkExperience & {
-  projects: Project[]
-}
-
-export type ProjectWithWorkExperience = Project & {
-  work_experience?: WorkExperience
-}
-
-export type NoteWithTags = Note & {
-  note_tags: NoteTag[]
-}
-
-export type NoteWithLinks = Note & {
-  source_links: NoteLink[]
-  target_links: NoteLink[]
-}
-
-export type NoteWithChildren = Note & {
-  children: Note[]
-}
-
-export type SkillsByCategory = {
-  [category: string]: Skill[]
-}
 
 // API response types
 export type ApiResponse<T> = {
@@ -542,26 +571,15 @@ export type PaginatedResponse<T> = {
 export type EmploymentType = 'full-time' | 'part-time' | 'internship' | 'volunteer' | 'academic'
 export type SkillCategory = 'programming' | 'languages' | 'tools' | 'frameworks'
 export type ActivityAction = 'create' | 'update' | 'delete' | 'view' | 'download' | 'upload'
-export type ResourceType = 
-  | 'note' 
-  | 'resume_file' 
-  | 'profile' 
-  | 'work_experience' 
-  | 'education' 
-  | 'project' 
-  | 'skill' 
-  | 'certification'
-  | 'note_link' 
-  | 'note_tag'
+export type ResourceType = 'note' | 'resume_file' | 'profile' | 'work_experience' | 'education' | 'project' | 'skill'
 
 // Resume page data structure
 export type ResumePageData = {
   profile: Profile
-  work_experiences: WorkExperienceWithProjects[]
+  work_experiences: WorkExperience[]
   education: Education[]
   projects: Project[]
-  skills: SkillsByCategory
-  certifications: Certification[]
+  skills: Skill[]
   resume_files: ResumeFile[]
 }
 
@@ -570,8 +588,8 @@ export type NoteContent = {
   type: 'doc'
   content: Array<{
     type: string
-    attrs?: Record<string, any>
-    content?: Array<any>
+    attrs?: Record<string, unknown>
+    content?: Array<unknown>
     text?: string
   }>
-} 
+}
